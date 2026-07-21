@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTC CLNM Risk Calculator | Ultrasound Viscoelastic Imaging</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #3182ce 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 25px;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 16px;
+            padding: 30px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #1a365d;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            color: #4a5568;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .header .journal-ref {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 13px;
+            color: #718096;
+            font-style: italic;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            color: #1a365d;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3182ce, #2c5282);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .card-subtitle {
+            color: #718096;
+            font-size: 13px;
+            margin-bottom: 24px;
+            padding-left: 42px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e53e3e;
+            margin-left: 2px;
+        }
+
+        .form-group .help-text {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: white;
+            color: #2d3748;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(49, 130, 206, 0.35);
+        }
+
+        .btn-calculate:active {
+            transform: translateY(0);
+        }
+
+        .reference-box {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 18px;
+            border-left: 3px solid #3182ce;
+        }
+
+        .reference-box .ref-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c5282;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .reference-box p {
+            font-size: 12px;
+            color: #718096;
+            line-height: 1.5;
+        }
+
+        /* Results */
+        .result-area {
+            display: none;
+        }
+
+        .result-area.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .risk-box {
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .risk-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .risk-box.high {
+            background: linear-gradient(135deg, #fff5f5, #fed7d7);
+            border: 1px solid #fc8181;
+        }
+
+        .risk-box.high::before {
+            background: #e53e3e;
+        }
+
+        .risk-box.low {
+            background: linear-gradient(135deg, #f0fff4, #c6f6d5);
+            border: 1px solid #68d391;
+        }
+
+        .risk-box.low::before {
+            background: #38a169;
+        }
+
+        .risk-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .risk-box.high .risk-title { color: #c53030; }
+        .risk-box.low .risk-title { color: #276749; }
+
+        .advice {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #4a5568;
+        }
+
+        .warning-box {
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .warning-box.high {
+            background: #fffaf0;
+            border: 1px solid #fbd38d;
+            color: #c05621;
+        }
+
+        .warning-box.low {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            color: #234e52;
+        }
+
+        .warning-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+
+        .placeholder .placeholder-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .placeholder p {
+            font-size: 14px;
+        }
+
+        /* Model Info */
+        .model-info {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .model-info h3 {
+            color: #1a365d;
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .model-info .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .info-item {
+            padding: 10px 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #4a5568;
+            border-left: 3px solid #3182ce;
+        }
+
+        .info-item strong {
+            color: #2c5282;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .perf-item {
+            text-align: center;
+            padding: 12px;
+            background: #edf2f7;
+            border-radius: 8px;
+        }
+
+        .perf-label {
+            font-size: 11px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .perf-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c5282;
+            margin-top: 4px;
+        }
+
+        .citation {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 11px;
+            color: #a0aec0;
+            line-height: 1.6;
+        }
+
+        .citation a {
+            color: #3182ce;
+            text-decoration: none;
+        }
+
+        /* Footer */
+        .footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .performance-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Preoperative Prediction of Central Lymph Node Metastasis in Papillary Thyroid Carcinoma</h1>
+            <p class="subtitle">A Nomogram Based on Clinical, Conventional Ultrasound, and Viscoelastic Parameters</p>
+            <p class="journal-ref">Based on: Development and Validation of a Prediction Model for CLNM in PTC Using Ultrasound Viscoelastic Imaging</p>
+        </div>
+
+        <!-- Input Panel -->
+        <div class="card">
+            <div class="card-title">
+                <div class="icon">📋</div>
+                Patient Information
+            </div>
+            <p class="card-subtitle">Enter clinical and ultrasound parameters</p>
+
+            <div class="form-group">
+                <label>Gender <span class="required">*</span></label>
+                <select id="gender">
+                    <option value="0">Female</option>
+                    <option value="1">Male</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Maximum Tumor Diameter <span class="required">*</span></label>
+                <select id="tumor_size">
+                    <option value="0">≤ 10 mm</option>
+                    <option value="1">> 10 mm</option>
+                </select>
+                <p class="help-text">Measured on longitudinal ultrasound view</p>
+            </div>
+
+            <div class="form-group">
+                <label>Capsular Invasion <span class="required">*</span></label>
+                <select id="capsule">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+                <p class="help-text">Contact length ≥25% or capsular disruption</p>
+            </div>
+
+            <div class="form-group">
+                <label>Multifocality <span class="required">*</span></label>
+                <select id="multifocal">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+                <p class="help-text">≥2 independent PTC foci confirmed by pathology</p>
+            </div>
+
+            <div class="form-group">
+                <label>Vmax (Pa·s) <span class="required">*</span></label>
+                <input type="number" id="vmax" value="3.0" min="0" step="0.1">
+                <p class="help-text">Maximum viscosity value from STVi</p>
+            </div>
+
+            <button class="btn-calculate" onclick="calculate()">CALCULATE PREDICTION</button>
+
+            <div class="reference-box">
+                <div class="ref-title">Reference Range</div>
+                <p>Vmax median: 3.64 (IQR: 2.38–6.16) Pa·s<br>
+                Measured using Sound Touch Viscoelastic Imaging (STVi)</p>
+            </div>
+        </div>
+
+        <!-- Result Panel -->
+        <div class="card">
+            <div class="card-title">
+                <div class="icon">📊</div>
+                Prediction Results
+            </div>
+            <p class="card-subtitle">CLNM risk stratification based on Model 2</p>
+
+            <div id="resultArea" class="result-area">
+                <div class="metrics">
+                    <div class="metric-card">
+                        <div class="metric-label">CLNM Probability</div>
+                        <div class="metric-value" id="probValue">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Nomogram Score</div>
+                        <div class="metric-value" id="scoreValue">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Risk Category</div>
+                        <div class="metric-value" id="levelValue">--</div>
+                    </div>
+                </div>
+
+                <div id="riskBox" class="risk-box">
+                    <div class="risk-title" id="riskTitle">--</div>
+                    <div class="advice" id="adviceText">--</div>
+                </div>
+
+                <div id="warningBox" class="warning-box">
+                    <span class="warning-icon" id="warningIcon">⚠️</span>
+                    <span id="warningText">--</span>
+                </div>
+            </div>
+
+            <div id="placeholder" class="placeholder">
+                <div class="placeholder-icon">🧮</div>
+                <p>Enter patient parameters and click "CALCULATE PREDICTION"<br>to obtain the CLNM risk assessment</p>
+            </div>
+
+            <!-- Model Information -->
+            <div class="model-info">
+                <h3>📖 Model Development</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Male</strong><br>OR = 3.02 (95% CI: 1.06–8.56)
+                    </div>
+                    <div class="info-item">
+                        <strong>Tumor >10 mm</strong><br>OR = 3.62 (95% CI: 1.25–10.48)
+                    </div>
+                    <div class="info-item">
+                        <strong>Capsular Invasion</strong><br>OR = 4.11 (95% CI: 1.41–11.96)
+                    </div>
+                    <div class="info-item">
+                        <strong>Multifocality</strong><br>OR = 13.13 (95% CI: 4.65–37.14)
+                    </div>
+                    <div class="info-item" style="grid-column: 1 / -1;">
+                        <strong>Vmax (per unit)</strong><br>OR = 1.47 (95% CI: 1.19–1.81)
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 20px;">📈 Model Performance</h3>
+                <div class="performance-metrics">
+                    <div class="perf-item">
+                        <div class="perf-label">Training AUC</div>
+                        <div class="perf-value">0.90</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="perf-label">Validation AUC</div>
+                        <div class="perf-value">0.89</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="perf-label">Cut-off</div>
+                        <div class="perf-value">104.1</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px; padding: 12px; background: #f7fafc; border-radius: 8px; font-size: 12px; color: #4a5568;">
+                    <strong>Validation:</strong> Hosmer-Lemeshow test P = 0.14 (training), 0.17 (validation). 
+                    DCA demonstrated superior clinical net benefit of Model 2. Subgroup analysis confirmed stability across tumor sizes and Hashimoto's thyroiditis status.
+                </div>
+            </div>
+
+            <div class="citation">
+                <strong>Citation:</strong> Based on "Development and Validation of a Prediction Model for Central Lymph Node Metastasis in Papillary Thyroid Carcinoma Using Ultrasound Viscoelastic Imaging" 
+                — A prospective study of 223 patients (training: n=156; validation: n=67).<br>
+                Online calculator: <a href="https://yaoshubin123.github.io/ptc-clnm-predictor/" target="_blank">https://yaoshubin123.github.io/ptc-clnm-predictor/</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            © 2025 Department of Ultrasound Medicine, The First Affiliated Hospital of Nanchang University | 
+            This calculator is for research and educational purposes only and should not replace clinical judgment.
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            // Get input values
+            const gender = parseInt(document.getElementById('gender').value);
+            const tumor_size = parseInt(document.getElementById('tumor_size').value);
+            const capsule = parseInt(document.getElementById('capsule').value);
+            const multifocal = parseInt(document.getElementById('multifocal').value);
+            const vmax = parseFloat(document.getElementById('vmax').value);
+
+            // Logistic regression calculation (Model 2)
+            let intercept = -2.8;
+            let z = intercept;
+
+            if (gender === 1) z += Math.log(3.02);
+            if (tumor_size === 1) z += Math.log(3.62);
+            if (capsule === 1) z += Math.log(4.11);
+            if (multifocal === 1) z += Math.log(13.13);
+            z += Math.log(1.47) * vmax;
+
+            const prob = 1 / (1 + Math.exp(-z));
+            const totalScore = Math.round(prob * 150 * 10) / 10;
+
+            // Risk stratification
+            let level, color, advice, riskTitle, warningIcon, warningText, riskBoxClass;
+
+            if (totalScore > 104.1) {
+                level = "HIGH RISK";
+                color = "#c53030";
+                advice = "The estimated incidence of CLNM is approximately 85.8%. Prophylactic central compartment neck dissection (CCND) should be considered, even in clinically node-negative (cN0) patients, following informed consent.";
+                riskTitle = "🔴 High-Risk Group";
+                warningIcon = "⚠️";
+                warningText = "This patient has a high probability of CLNM. Preoperative thorough evaluation is recommended, and therapeutic CCND should be considered.";
+                riskBoxClass = "high";
+            } else {
+                level = "LOW RISK";
+                color = "#276749";
+                advice = "The estimated incidence of CLNM is approximately 10.0%. Close surveillance may be considered to avoid overtreatment and surgical complications (e.g., hypoparathyroidism, recurrent laryngeal nerve injury).";
+                riskTitle = "🟢 Low-Risk Group";
+                warningIcon = "✓";
+                warningText = "This patient has a low probability of CLNM. Conservative management with careful follow-up may be appropriate to avoid unnecessary surgical morbidity.";
+                riskBoxClass = "low";
+            }
+
+            // Update display
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('resultArea').classList.add('active');
+
+            document.getElementById('probValue').textContent = (prob * 100).toFixed(1) + '%';
+            document.getElementById('probValue').style.color = color;
+            document.getElementById('scoreValue').textContent = totalScore;
+            document.getElementById('levelValue').textContent = level;
+            document.getElementById('levelValue').style.color = color;
+
+            const riskBox = document.getElementById('riskBox');
+            riskBox.className = 'risk-box ' + riskBoxClass;
+            document.getElementById('riskTitle').textContent = riskTitle;
+            document.getElementById('adviceText').textContent = advice;
+
+            const warningBox = document.getElementById('warningBox');
+            warningBox.className = 'warning-box ' + riskBoxClass;
+            document.getElementById('warningIcon').textContent = warningIcon;
+            document.getElementById('warningText').textContent = warningText;
+        }
+    </script>
+</body>
+</html>
